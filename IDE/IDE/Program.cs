@@ -32,7 +32,7 @@ namespace IDE
 
             } while (userSelection == 1);
 
-            Console.WriteLine("If you want to calculate with average, type 1, otherwise type 0: ");
+            Console.WriteLine("If you want to calculate with average, type 1, with median type 0: ");
             var printAverage = Convert.ToBoolean(inputAndValidateInt());
 
             printTable(userInput, printAverage);
@@ -105,15 +105,29 @@ namespace IDE
             userInput.name = Console.ReadLine();
             Console.WriteLine("Please enter your last name: ");
             userInput.lastName = Console.ReadLine();
-            Console.WriteLine("Please enter amount of results you will provide: ");
-            userInput.numberOfGrades = inputAndValidateGrade();
 
             userInput.grades = new List<int>();
-            for (int i = 1; i <= userInput.numberOfGrades; i++)
+            Console.WriteLine("Please enter result: ");
+            userInput.grades.Add(inputAndValidateGrade());
+
+            int addMore = 0;
+            do
             {
-                Console.WriteLine("Please enter {0} result: ", i);
-                userInput.grades.Add(inputAndValidateGrade());
-            }
+                Console.Clear();
+
+                Console.WriteLine("If you want to add one more results, type 1, otherwise type 0: ");
+                addMore = inputAndValidateInt();
+                switch (addMore)
+                {
+                    case 1:
+                        Console.WriteLine("Please enter result: ");
+                        userInput.grades.Add(inputAndValidateGrade());
+                        break;
+                    default:
+                        break;
+                }
+
+            } while (addMore == 1);
 
             Console.WriteLine("Please enter result of the exam: ");
             userInput.examGrade = inputAndValidateGrade();
