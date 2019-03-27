@@ -10,11 +10,49 @@ namespace IDE
     {
         static void Main(string[] args)
         {
-            var userInput = readUserInput();
+            List<UserInput> userInput = new List<UserInput>();
 
-            Console.WriteLine("Final result for student {0} {1} is: {2}", userInput.name, userInput.lastName, calculateFinalResult(userInput));
+            userInput.Add(readUserInput());
+            
+            int userSelection = 0;
+            do
+            {
+                Console.Clear();
+
+                Console.WriteLine("If you want to add one more student, type 1, otherwise type 0: ");
+                userSelection = inputAndValidateInt();
+                switch (userSelection)
+                {
+                    case 1:
+                        userInput.Add(readUserInput());
+                        break;
+                    default:
+                        break;
+                }
+
+            } while (userSelection == 1);
+
+            printTable(userInput);
 
             Console.ReadKey(true);
+        }
+
+        static void printTable(List<UserInput> userInput)
+        {
+            string header = "Surname".PadRight(12) +
+                            "Name".PadRight(18) +
+                            "Final points (Avg.)".PadLeft(20);
+            Console.WriteLine(header);
+
+            string separator = "--------------------------------------------------";
+            Console.WriteLine(separator);
+
+            foreach (UserInput singleInput in userInput) {
+                string row = singleInput.lastName.PadRight(12) +
+                             singleInput.name.PadRight(18) +
+                             calculateFinalResult(singleInput).ToString("0.00").PadLeft(20);
+                Console.WriteLine(row);
+            }
         }
 
         static double calculateFinalResult(UserInput userInput)
@@ -47,6 +85,19 @@ namespace IDE
 
         static int inputAndValidateGrade()
         {
+            var x = inputAndValidateInt();
+
+            if (x < 1 || x > 10)
+            {
+                Console.WriteLine("{0} is not in range 1..10. Please try again: ", x);
+                x = inputAndValidateGrade();
+            }
+
+            return x;
+        }
+
+        static int inputAndValidateInt()
+        {
             var input = Console.ReadLine();
             int x;
 
@@ -54,12 +105,6 @@ namespace IDE
             {
                 Console.Write("{0} is not a integer. Please try again: ", input);
                 input = Console.ReadLine();
-            }
-
-            if (x < 1 || x > 10)
-            {
-                Console.WriteLine("{0} is not in range 1..10. Please try again: ", x);
-                x = inputAndValidateGrade();
             }
 
             return x;
