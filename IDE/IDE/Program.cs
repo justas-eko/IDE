@@ -106,31 +106,51 @@ namespace IDE
             Console.WriteLine("Please enter your last name: ");
             userInput.lastName = Console.ReadLine();
 
-            userInput.grades = new List<int>();
-            Console.WriteLine("Please enter result: ");
-            userInput.grades.Add(inputAndValidateGrade());
+            Console.WriteLine("If you want to generate results and exams randomly, type 1, otherwise type 0: ");
+            var generateRandom = Convert.ToBoolean(inputAndValidateInt());
 
-            int addMore = 0;
-            do
+            if (!generateRandom)
             {
-                Console.Clear();
+                userInput.grades = new List<int>();
+                Console.WriteLine("Please enter result: ");
+                userInput.grades.Add(inputAndValidateGrade());
 
-                Console.WriteLine("If you want to add one more results, type 1, otherwise type 0: ");
-                addMore = inputAndValidateInt();
-                switch (addMore)
+                int addMore = 0;
+                do
                 {
-                    case 1:
-                        Console.WriteLine("Please enter result: ");
-                        userInput.grades.Add(inputAndValidateGrade());
-                        break;
-                    default:
-                        break;
+                    Console.Clear();
+
+                    Console.WriteLine("If you want to add one more results, type 1, otherwise type 0: ");
+                    addMore = inputAndValidateInt();
+                    switch (addMore)
+                    {
+                        case 1:
+                            Console.WriteLine("Please enter result: ");
+                            userInput.grades.Add(inputAndValidateGrade());
+                            break;
+                        default:
+                            break;
+                    }
+
+                } while (addMore == 1);
+
+                Console.WriteLine("Please enter result of the exam: ");
+                userInput.examGrade = inputAndValidateGrade();
+            } else
+            {
+                Random r = new Random();
+
+                var amountOfGrades = r.Next(1, 10);
+
+                userInput.grades = new List<int>();
+
+                for (int i = 0; i < amountOfGrades; i++)
+                {
+                    userInput.grades.Add(r.Next(1, 10));
                 }
 
-            } while (addMore == 1);
-
-            Console.WriteLine("Please enter result of the exam: ");
-            userInput.examGrade = inputAndValidateGrade();
+                userInput.examGrade = r.Next(1, 10);
+            }
 
             return userInput;
         }
