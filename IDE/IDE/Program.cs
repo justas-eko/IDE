@@ -32,32 +32,70 @@ namespace IDE
 
             } while (userSelection == 1);
 
-            printTable(userInput);
+            Console.WriteLine("If you want to calculate with average, type 1, otherwise type 0: ");
+            var printAverage = Convert.ToBoolean(inputAndValidateInt());
+
+            printTable(userInput, printAverage);
 
             Console.ReadKey(true);
         }
 
-        static void printTable(List<UserInput> userInput)
+        static void printTable(List<UserInput> userInput, bool showAverage)
         {
             string header = "Surname".PadRight(12) +
                             "Name".PadRight(18) +
-                            "Final points (Avg.)".PadLeft(20);
+                            "Final points (Avg.)".PadLeft(20) +
+                            " / " +
+                            "Final points (Med.)".PadLeft(20); ;
             Console.WriteLine(header);
 
-            string separator = "--------------------------------------------------";
+            string separator = "-------------------------------------------------------------------------";
             Console.WriteLine(separator);
 
             foreach (UserInput singleInput in userInput) {
                 string row = singleInput.lastName.PadRight(12) +
-                             singleInput.name.PadRight(18) +
-                             calculateFinalResult(singleInput).ToString("0.00").PadLeft(20);
+                             singleInput.name.PadRight(18);
+                if (showAverage)
+                    row += calculateFinalAverage(singleInput).ToString("0.00").PadLeft(20);
+                else
+                    row += calculateFinalMedian(singleInput).ToString("0.00").PadLeft(43);
                 Console.WriteLine(row);
             }
         }
 
-        static double calculateFinalResult(UserInput userInput)
+        static double calculateFinalAverage(UserInput userInput)
         {
             return (userInput.grades.Average() * 0.3) + (0.7 * userInput.examGrade);
+        }
+
+        static double calculateFinalMedian(UserInput userInput)
+        {
+            return (Convert.ToDouble(GetMedian(userInput.grades)) * 0.3) + (0.7 * userInput.examGrade);
+        }
+
+        static decimal GetMedian(IEnumerable<int> source)
+        {
+            // Create a copy of the input, and sort the copy
+            int[] temp = source.ToArray();
+            Array.Sort(temp);
+
+            int count = temp.Length;
+            if (count == 0)
+            {
+                throw new InvalidOperationException("Empty collection");
+            }
+            else if (count % 2 == 0)
+            {
+                // count is even, average two middle elements
+                int a = temp[count / 2 - 1];
+                int b = temp[count / 2];
+                return (a + b) / 2m;
+            }
+            else
+            {
+                // count is odd, return the middle element
+                return temp[count / 2];
+            }
         }
 
         static UserInput readUserInput()
