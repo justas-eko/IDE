@@ -75,3 +75,11 @@ Done reading from: students100000.txt
 To process 100000 lines took: 1135ms
 
 -----------------
+
+
+
+# Release v1.0
+Most memory efficient and optimized version so far.
+Using only one list in memory - complete copy of the input file.
+This is required as we need to sort students by surname.
+Program is computing the averages and outpiting students data directly in the files passed/failed as it is not required to do any more manipulations with the parsed data.
