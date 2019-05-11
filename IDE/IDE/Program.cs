@@ -31,7 +31,16 @@ namespace IDE
                 Console.WriteLine(e.Message);
             }
 
-            PrintTable(userInput);
+            try
+            {
+                PrintTable(userInput);
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine("Errors occured while printing: ");
+                Console.WriteLine(e.Message);
+            }
+
 
             Console.ReadKey(true);
         }
@@ -50,53 +59,21 @@ namespace IDE
 
             userInput = userInput.OrderBy(o => o.LastName).ToList();
 
+            IDEMath ideMath = new IDEMath();
+
             foreach (UserInput singleInput in userInput) {
                 string row = singleInput.LastName.PadRight(12) +
-                             singleInput.Name.PadRight(18) + 
-                             CalculateFinalAverage(singleInput).ToString("0.00").PadLeft(20) +
-                             CalculateFinalMedian(singleInput).ToString("0.00").PadLeft(23);
+                             singleInput.Name.PadRight(18) +
+                             ideMath.CalculateFinalAverage(singleInput).ToString("0.00").PadLeft(20) +
+                             ideMath.CalculateFinalMedian(singleInput).ToString("0.00").PadLeft(23);
                 Console.WriteLine(row);
             }
         }
 
-        static double CalculateFinalAverage(UserInput userInput)
+        static UserInput ReadLineFromFile(string inputLine)
         {
-            return (userInput.Grades.Average() * 0.3) + (0.7 * userInput.ExamGrade);
-        }
-
-        static double CalculateFinalMedian(UserInput userInput)
-        {
-            return (Convert.ToDouble(GetMedian(userInput.Grades)) * 0.3) + (0.7 * userInput.ExamGrade);
-        }
-
-        static decimal GetMedian(IEnumerable<int> source)
-        {
-            // Create a copy of the input, and sort the copy
-            int[] temp = source.ToArray();
-            Array.Sort(temp);
-
-            int count = temp.Length;
-            if (count == 0)
-            {
-                throw new InvalidOperationException("Empty collection");
-            }
-            else if (count % 2 == 0)
-            {
-                // count is even, average two middle elements
-                int a = temp[count / 2 - 1];
-                int b = temp[count / 2];
-                return (a + b) / 2m;
-            }
-            else
-            {
-                // count is odd, return the middle element
-                return temp[count / 2];
-            }
-        }
-
-        static UserInput ReadLineFromFile(String inputLine)
-        {
-            string[] stringEntries = RemoveSpaces(inputLine).Trim(' ').Split(' ');
+            IDEUtils ideUtils = new IDEUtils();
+            string[] stringEntries = ideUtils.RemoveSpaces(inputLine).Trim(' ').Split(' ');
 
             UserInput userInput = new UserInput();
             userInput.LastName = stringEntries[0];
@@ -105,45 +82,12 @@ namespace IDE
             userInput.Grades = new List<int>();
             for (int i = 2; i < stringEntries.Length - 1; i++)
             {
-                userInput.Grades.Add(ValidateInt(stringEntries[i]));
+                userInput.Grades.Add(ideUtils.ValidateInt(stringEntries[i]));
             }
 
-            userInput.ExamGrade = ValidateInt(stringEntries[stringEntries.Length - 1]);
+            userInput.ExamGrade = ideUtils.ValidateInt(stringEntries[stringEntries.Length - 1]);
 
             return userInput;
         }
-
-        static string RemoveSpaces(string inputLine)
-        {
-            string s2 = inputLine;
-            do
-            {
-                inputLine = s2;
-                s2 = s2.Replace("  ", " ");
-            } while (inputLine != s2);
-
-            return inputLine;
-        }
-
-        static int ValidateInt(string input)
-        {
-
-            if (!int.TryParse(input, out int x))
-            {
-                throw new System.ArgumentException("Incorrect input!");
-            }
-
-
-            return x;
-        }
-    }
-
-    class UserInput
-    {
-        public string Name { set; get; }
-        public string LastName { set; get; }
-        public int NumberOfGrades { set; get; }
-        public List<int> Grades { set; get; }
-        public int ExamGrade { set; get; }
     }
 }
