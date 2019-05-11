@@ -7,13 +7,36 @@ namespace IDE
 {
     class Program
     {
+        private static readonly Random r = new Random();
+        private static readonly string dir = "C:\\Users\\JustasWin\\Documents\\IDE\\IDE\\IDE\\";
         static void Main()
         {
-            List<UserInput> userInput = new List<UserInput>();
+            GenerateAndReadAndOutputStudentsFile(100);
+            GenerateAndReadAndOutputStudentsFile(1000);
+            GenerateAndReadAndOutputStudentsFile(10000);
+            GenerateAndReadAndOutputStudentsFile(100000);
 
+            Console.WriteLine("Press any key to end..");
+            Console.ReadKey(true);
+        }
+
+        static void GenerateAndReadAndOutputStudentsFile(int length)
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            GenerateStudentsFile(length);
+            ReadFilesAndOutputResults(length);
+            Console.WriteLine("To process " + length.ToString() + " lines took: " + watch.ElapsedMilliseconds + "ms");
+            Console.WriteLine();
+        }
+
+        static void ReadFilesAndOutputResults(int length)
+        {
+            List<UserInput> userInput = new List<UserInput>();
+            string inFileName = "students" + length.ToString() + ".txt";
+            Console.WriteLine("Reading from: " + inFileName);
             try
             {   // Open the text file using a stream reader.
-                using (StreamReader sr = new StreamReader("C:\\Users\\JustasWin\\Documents\\IDE\\IDE\\IDE\\students.txt"))
+                using (StreamReader sr = new StreamReader(dir + inFileName))
                 {
                     // Read the stream to a string, and write the string to the console.
                     string header = sr.ReadLine();
@@ -21,7 +44,6 @@ namespace IDE
                     while (sr.Peek() >= 0)
                     {
                         userInput.Add(ReadLineFromFile(sr.ReadLine()));
-                        Console.WriteLine();
                     }
                 }
             }
@@ -33,7 +55,7 @@ namespace IDE
 
             try
             {
-                PrintTable(userInput);
+                PrintTable(userInput, length);
             }
             catch (IOException e)
             {
@@ -41,32 +63,83 @@ namespace IDE
                 Console.WriteLine(e.Message);
             }
 
-
-            Console.ReadKey(true);
+            Console.WriteLine("Done reading from: " + inFileName);
         }
 
-        static void PrintTable(List<UserInput> userInput)
+        static void GenerateStudentsFile(int length)
         {
-            string header = "Surname".PadRight(12) +
-                            "Name".PadRight(18) +
-                            "Final points (Avg.)".PadLeft(20) +
-                            "   " +
-                            "Final points (Med.)".PadLeft(20); ;
-            Console.WriteLine(header);
+            using (StreamWriter outputFile = new StreamWriter(dir + "students" + length.ToString() + ".txt"))
+            {
+                outputFile.WriteLine("Surname     Name        HW1 HW2 HW3 HW4 HW5  Exam");
+                for (int i = 0; i < length; i++)
+                {
+                    outputFile.WriteLine(GenerateUserInputString(GenerateUserInput(i)));
+                }
+            }
+        }
 
-            string separator = "-------------------------------------------------------------------------";
-            Console.WriteLine(separator);
+        static UserInput GenerateUserInput(int i)
+        { 
+            return new UserInput
+            {
+                LastName = "Surname" + i.ToString(),
+                Name = "Name" + i.ToString(),
+                Grades = new List<int>() { r.Next(1, 10), r.Next(1, 10), r.Next(1, 10), r.Next(1, 10), r.Next(1, 10) },
+                ExamGrade = r.Next(1, 10)
+            };
+        }
+
+        static string GenerateUserInputString(UserInput userInput)
+        {
+            return userInput.LastName.PadRight(12) +
+                userInput.Name.PadRight(12) +
+                userInput.Grades[0].ToString().PadLeft(3) +
+                userInput.Grades[1].ToString().PadLeft(4) +
+                userInput.Grades[2].ToString().PadLeft(4) +
+                userInput.Grades[3].ToString().PadLeft(4) +
+                userInput.Grades[4].ToString().PadLeft(4) +
+                userInput.ExamGrade.ToString().PadLeft(6);
+        }
+
+        static void PrintTable(List<UserInput> userInput, int length)
+        {
 
             userInput = userInput.OrderBy(o => o.LastName).ToList();
 
-            IDEMath ideMath = new IDEMath();
+            string outFileNameFailed = "students" + length.ToString() + "_failed.txt";
+            string outFileNamePassed = "students" + length.ToString() + "_passed.txt";
 
+            StreamWriter failedStream = new StreamWriter(dir + outFileNameFailed);
+            StreamWriter passedStream = new StreamWriter(dir + outFileNamePassed);
+            StreamWriter outStream;
+
+            string header = "Surname".PadRight(12) +
+                "Name".PadRight(18) +
+                "Final points (Avg.)".PadLeft(20) +
+                "   " +
+                "Final points (Med.)".PadLeft(20); ;
+            failedStream.WriteLine(header);
+            passedStream.WriteLine(header);
+            string separator = "-------------------------------------------------------------------------";
+            failedStream.WriteLine(separator);
+            passedStream.WriteLine(separator);
+
+            IDEMath ideMath = new IDEMath();
             foreach (UserInput singleInput in userInput) {
+                double average = ideMath.CalculateFinalAverage(singleInput);
+
+                if (average < 5.0)
+                {
+                    outStream = failedStream;
+                } else
+                {
+                    outStream = passedStream;
+                }
                 string row = singleInput.LastName.PadRight(12) +
                              singleInput.Name.PadRight(18) +
-                             ideMath.CalculateFinalAverage(singleInput).ToString("0.00").PadLeft(20) +
+                             average.ToString("0.00").PadLeft(20) +
                              ideMath.CalculateFinalMedian(singleInput).ToString("0.00").PadLeft(23);
-                Console.WriteLine(row);
+                outStream.WriteLine(row);
             }
         }
 
