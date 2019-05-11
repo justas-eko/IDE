@@ -1,76 +1,72 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IDE
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             List<UserInput> userInput = new List<UserInput>();
 
-            userInput.Add(readUserInput());
-            
-            int userSelection = 0;
-            do
-            {
-                Console.Clear();
-
-                Console.WriteLine("If you want to add one more student, type 1, otherwise type 0: ");
-                userSelection = inputAndValidateInt();
-                switch (userSelection)
+            try
+            {   // Open the text file using a stream reader.
+                using (StreamReader sr = new StreamReader("C:\\Users\\JustasWin\\Documents\\IDE\\IDE\\IDE\\students.txt"))
                 {
-                    case 1:
-                        userInput.Add(readUserInput());
-                        break;
-                    default:
-                        break;
+                    // Read the stream to a string, and write the string to the console.
+                    string header = sr.ReadLine();
+
+                    while (sr.Peek() >= 0)
+                    {
+                        userInput.Add(ReadLineFromFile(sr.ReadLine()));
+                        Console.WriteLine();
+                    }
                 }
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine("The file could not be read:");
+                Console.WriteLine(e.Message);
+            }
 
-            } while (userSelection == 1);
-
-            Console.WriteLine("If you want to calculate with average, type 1, with median type 0: ");
-            var printAverage = Convert.ToBoolean(inputAndValidateInt());
-
-            printTable(userInput, printAverage);
+            PrintTable(userInput);
 
             Console.ReadKey(true);
         }
 
-        static void printTable(List<UserInput> userInput, bool showAverage)
+        static void PrintTable(List<UserInput> userInput)
         {
             string header = "Surname".PadRight(12) +
                             "Name".PadRight(18) +
                             "Final points (Avg.)".PadLeft(20) +
-                            " / " +
+                            "   " +
                             "Final points (Med.)".PadLeft(20); ;
             Console.WriteLine(header);
 
             string separator = "-------------------------------------------------------------------------";
             Console.WriteLine(separator);
 
+            userInput = userInput.OrderBy(o => o.LastName).ToList();
+
             foreach (UserInput singleInput in userInput) {
-                string row = singleInput.lastName.PadRight(12) +
-                             singleInput.name.PadRight(18);
-                if (showAverage)
-                    row += calculateFinalAverage(singleInput).ToString("0.00").PadLeft(20);
-                else
-                    row += calculateFinalMedian(singleInput).ToString("0.00").PadLeft(43);
+                string row = singleInput.LastName.PadRight(12) +
+                             singleInput.Name.PadRight(18) + 
+                             CalculateFinalAverage(singleInput).ToString("0.00").PadLeft(20) +
+                             CalculateFinalMedian(singleInput).ToString("0.00").PadLeft(23);
                 Console.WriteLine(row);
             }
         }
 
-        static double calculateFinalAverage(UserInput userInput)
+        static double CalculateFinalAverage(UserInput userInput)
         {
-            return (userInput.grades.Average() * 0.3) + (0.7 * userInput.examGrade);
+            return (userInput.Grades.Average() * 0.3) + (0.7 * userInput.ExamGrade);
         }
 
-        static double calculateFinalMedian(UserInput userInput)
+        static double CalculateFinalMedian(UserInput userInput)
         {
-            return (Convert.ToDouble(GetMedian(userInput.grades)) * 0.3) + (0.7 * userInput.examGrade);
+            return (Convert.ToDouble(GetMedian(userInput.Grades)) * 0.3) + (0.7 * userInput.ExamGrade);
         }
 
         static decimal GetMedian(IEnumerable<int> source)
@@ -98,86 +94,45 @@ namespace IDE
             }
         }
 
-        static UserInput readUserInput()
+        static UserInput ReadLineFromFile(String inputLine)
         {
+            string[] stringEntries = RemoveSpaces(inputLine).Trim(' ').Split(' ');
+
             UserInput userInput = new UserInput();
-            Console.WriteLine("Please enter your name: ");
-            userInput.name = Console.ReadLine();
-            Console.WriteLine("Please enter your last name: ");
-            userInput.lastName = Console.ReadLine();
+            userInput.LastName = stringEntries[0];
+            userInput.Name = stringEntries[1];
 
-            Console.WriteLine("If you want to generate results and exams randomly, type 1, otherwise type 0: ");
-            var generateRandom = Convert.ToBoolean(inputAndValidateInt());
-
-            if (!generateRandom)
+            userInput.Grades = new List<int>();
+            for (int i = 2; i < stringEntries.Length - 1; i++)
             {
-                userInput.grades = new List<int>();
-                Console.WriteLine("Please enter result: ");
-                userInput.grades.Add(inputAndValidateGrade());
-
-                int addMore = 0;
-                do
-                {
-                    Console.Clear();
-
-                    Console.WriteLine("If you want to add one more results, type 1, otherwise type 0: ");
-                    addMore = inputAndValidateInt();
-                    switch (addMore)
-                    {
-                        case 1:
-                            Console.WriteLine("Please enter result: ");
-                            userInput.grades.Add(inputAndValidateGrade());
-                            break;
-                        default:
-                            break;
-                    }
-
-                } while (addMore == 1);
-
-                Console.WriteLine("Please enter result of the exam: ");
-                userInput.examGrade = inputAndValidateGrade();
-            } else
-            {
-                Random r = new Random();
-
-                var amountOfGrades = r.Next(1, 10);
-
-                userInput.grades = new List<int>();
-
-                for (int i = 0; i < amountOfGrades; i++)
-                {
-                    userInput.grades.Add(r.Next(1, 10));
-                }
-
-                userInput.examGrade = r.Next(1, 10);
+                userInput.Grades.Add(ValidateInt(stringEntries[i]));
             }
+
+            userInput.ExamGrade = ValidateInt(stringEntries[stringEntries.Length - 1]);
 
             return userInput;
         }
 
-        static int inputAndValidateGrade()
+        static string RemoveSpaces(string inputLine)
         {
-            var x = inputAndValidateInt();
-
-            if (x < 1 || x > 10)
+            string s2 = inputLine;
+            do
             {
-                Console.WriteLine("{0} is not in range 1..10. Please try again: ", x);
-                x = inputAndValidateGrade();
-            }
+                inputLine = s2;
+                s2 = s2.Replace("  ", " ");
+            } while (inputLine != s2);
 
-            return x;
+            return inputLine;
         }
 
-        static int inputAndValidateInt()
+        static int ValidateInt(string input)
         {
-            var input = Console.ReadLine();
-            int x;
 
-            while (!int.TryParse(input, out x))
+            if (!int.TryParse(input, out int x))
             {
-                Console.Write("{0} is not a integer. Please try again: ", input);
-                input = Console.ReadLine();
+                throw new System.ArgumentException("Incorrect input!");
             }
+
 
             return x;
         }
@@ -185,10 +140,10 @@ namespace IDE
 
     class UserInput
     {
-        public string name { set; get; }
-        public string lastName { set; get; }
-        public int numberOfGrades { set; get; }
-        public List<int> grades { set; get; }
-        public int examGrade { set; get; }
+        public string Name { set; get; }
+        public string LastName { set; get; }
+        public int NumberOfGrades { set; get; }
+        public List<int> Grades { set; get; }
+        public int ExamGrade { set; get; }
     }
 }
