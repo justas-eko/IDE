@@ -11,25 +11,62 @@ namespace IDE
         private static readonly string dir = "C:\\Users\\JustasWin\\Documents\\IDE\\IDE\\IDE\\";
         static void Main()
         {
-            GenerateAndReadAndOutputStudentsFile(100);
-            GenerateAndReadAndOutputStudentsFile(1000);
-            GenerateAndReadAndOutputStudentsFile(10000);
-            GenerateAndReadAndOutputStudentsFile(100000);
+            GenerateStudentsFile(100);
+            GenerateStudentsFile(1000);
+            GenerateStudentsFile(10000);
+            GenerateStudentsFile(100000);
+
+            Console.WriteLine("-----List");
+            ReadAndOutputStudentsFileList(100);
+            ReadAndOutputStudentsFileList(1000);
+            ReadAndOutputStudentsFileList(10000);
+            ReadAndOutputStudentsFileList(100000);
+            Console.WriteLine("-----------------");
+
+            Console.WriteLine("-----LinkedList");
+            ReadAndOutputStudentsFileLinkedList(100);
+            ReadAndOutputStudentsFileLinkedList(1000);
+            ReadAndOutputStudentsFileLinkedList(10000);
+            ReadAndOutputStudentsFileLinkedList(100000);
+            Console.WriteLine("-----------------");
+
+            Console.WriteLine("-----Queue");
+            ReadAndOutputStudentsFileDeque(100);
+            ReadAndOutputStudentsFileDeque(1000);
+            ReadAndOutputStudentsFileDeque(10000);
+            ReadAndOutputStudentsFileDeque(100000);
+            Console.WriteLine("-----------------");
+
 
             Console.WriteLine("Press any key to end..");
             Console.ReadKey(true);
         }
 
-        static void GenerateAndReadAndOutputStudentsFile(int length)
+        static void ReadAndOutputStudentsFileList(int length)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            GenerateStudentsFile(length);
-            ReadFilesAndOutputResults(length);
+            ReadFilesAndOutputResultsList(length, "List");
             Console.WriteLine("To process " + length.ToString() + " lines took: " + watch.ElapsedMilliseconds + "ms");
             Console.WriteLine();
         }
 
-        static void ReadFilesAndOutputResults(int length)
+        static void ReadAndOutputStudentsFileLinkedList(int length)
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            ReadFilesAndOutputResultsLinkedList(length, "LinkedList");
+            Console.WriteLine("To process " + length.ToString() + " lines took: " + watch.ElapsedMilliseconds + "ms");
+            Console.WriteLine();
+        }
+
+        static void ReadAndOutputStudentsFileDeque(int length)
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            ReadFilesAndOutputResultsDeque(length, "Queue");
+            Console.WriteLine("To process " + length.ToString() + " lines took: " + watch.ElapsedMilliseconds + "ms");
+            Console.WriteLine();
+        }
+
+        static void ReadFilesAndOutputResultsList(int length, string enumerableType)
         {
             List<UserInput> userInput = new List<UserInput>();
             string inFileName = "students" + length.ToString() + ".txt";
@@ -53,15 +90,68 @@ namespace IDE
                 Console.WriteLine(e.Message);
             }
 
+
+            PrintTable(userInput, length, enumerableType);
+
+            Console.WriteLine("Done reading from: " + inFileName);
+        }
+
+        static void ReadFilesAndOutputResultsLinkedList(int length, string enumerableType)
+        {
+            LinkedList<UserInput> userInput = new LinkedList<UserInput>();
+            string inFileName = "students" + length.ToString() + ".txt";
+            Console.WriteLine("Reading from: " + inFileName);
             try
-            {
-                PrintTable(userInput, length);
+            {   // Open the text file using a stream reader.
+                using (StreamReader sr = new StreamReader(dir + inFileName))
+                {
+                    // Read the stream to a string, and write the string to the console.
+                    string header = sr.ReadLine();
+
+                    while (sr.Peek() >= 0)
+                    {
+                        userInput.AddLast(ReadLineFromFile(sr.ReadLine()));
+                    }
+                }
             }
             catch (IOException e)
             {
-                Console.WriteLine("Errors occured while printing: ");
+                Console.WriteLine("The file could not be read:");
                 Console.WriteLine(e.Message);
             }
+
+
+            PrintTable(userInput, length, enumerableType);
+
+            Console.WriteLine("Done reading from: " + inFileName);
+        }
+
+        static void ReadFilesAndOutputResultsDeque(int length, string enumerableType)
+        {
+            Queue<UserInput> userInput = new Queue<UserInput>();
+            string inFileName = "students" + length.ToString() + ".txt";
+            Console.WriteLine("Reading from: " + inFileName);
+            try
+            {   // Open the text file using a stream reader.
+                using (StreamReader sr = new StreamReader(dir + inFileName))
+                {
+                    // Read the stream to a string, and write the string to the console.
+                    string header = sr.ReadLine();
+
+                    while (sr.Peek() >= 0)
+                    {
+                        userInput.Enqueue(ReadLineFromFile(sr.ReadLine()));
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine("The file could not be read:");
+                Console.WriteLine(e.Message);
+            }
+
+
+            PrintTable(userInput, length, enumerableType);
 
             Console.WriteLine("Done reading from: " + inFileName);
         }
@@ -101,45 +191,54 @@ namespace IDE
                 userInput.ExamGrade.ToString().PadLeft(6);
         }
 
-        static void PrintTable(List<UserInput> userInput, int length)
+        static void PrintTable(IEnumerable<UserInput> userInput, int length, string enumerableType)
         {
+            try
+            {
+                userInput = userInput.OrderBy(o => o.LastName).ToList();
 
-            userInput = userInput.OrderBy(o => o.LastName).ToList();
+                string outFileNameFailed = "students" + length.ToString() + "_failed_" + enumerableType + ".txt";
+                string outFileNamePassed = "students" + length.ToString() + "_passed_" + enumerableType + ".txt";
 
-            string outFileNameFailed = "students" + length.ToString() + "_failed.txt";
-            string outFileNamePassed = "students" + length.ToString() + "_passed.txt";
+                StreamWriter failedStream = new StreamWriter(dir + outFileNameFailed);
+                StreamWriter passedStream = new StreamWriter(dir + outFileNamePassed);
+                StreamWriter outStream;
 
-            StreamWriter failedStream = new StreamWriter(dir + outFileNameFailed);
-            StreamWriter passedStream = new StreamWriter(dir + outFileNamePassed);
-            StreamWriter outStream;
+                string header = "Surname".PadRight(12) +
+                    "Name".PadRight(18) +
+                    "Final points (Avg.)".PadLeft(20) +
+                    "   " +
+                    "Final points (Med.)".PadLeft(20); ;
+                failedStream.WriteLine(header);
+                passedStream.WriteLine(header);
+                string separator = "-------------------------------------------------------------------------";
+                failedStream.WriteLine(separator);
+                passedStream.WriteLine(separator);
 
-            string header = "Surname".PadRight(12) +
-                "Name".PadRight(18) +
-                "Final points (Avg.)".PadLeft(20) +
-                "   " +
-                "Final points (Med.)".PadLeft(20); ;
-            failedStream.WriteLine(header);
-            passedStream.WriteLine(header);
-            string separator = "-------------------------------------------------------------------------";
-            failedStream.WriteLine(separator);
-            passedStream.WriteLine(separator);
-
-            IDEMath ideMath = new IDEMath();
-            foreach (UserInput singleInput in userInput) {
-                double average = ideMath.CalculateFinalAverage(singleInput);
-
-                if (average < 5.0)
+                IDEMath ideMath = new IDEMath();
+                foreach (UserInput singleInput in userInput)
                 {
-                    outStream = failedStream;
-                } else
-                {
-                    outStream = passedStream;
+                    double average = ideMath.CalculateFinalAverage(singleInput);
+
+                    if (average < 5.0)
+                    {
+                        outStream = failedStream;
+                    }
+                    else
+                    {
+                        outStream = passedStream;
+                    }
+                    string row = singleInput.LastName.PadRight(12) +
+                                 singleInput.Name.PadRight(18) +
+                                 average.ToString("0.00").PadLeft(20) +
+                                 ideMath.CalculateFinalMedian(singleInput).ToString("0.00").PadLeft(23);
+                    outStream.WriteLine(row);
                 }
-                string row = singleInput.LastName.PadRight(12) +
-                             singleInput.Name.PadRight(18) +
-                             average.ToString("0.00").PadLeft(20) +
-                             ideMath.CalculateFinalMedian(singleInput).ToString("0.00").PadLeft(23);
-                outStream.WriteLine(row);
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine("Errors occured while printing: ");
+                Console.WriteLine(e.Message);
             }
         }
 
