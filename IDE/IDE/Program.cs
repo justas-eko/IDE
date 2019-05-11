@@ -16,20 +16,6 @@ namespace IDE
             GenerateStudentsFile(10000);
             GenerateStudentsFile(100000);
 
-            Console.WriteLine("-----List");
-            ReadAndOutputStudentsFileList(100);
-            ReadAndOutputStudentsFileList(1000);
-            ReadAndOutputStudentsFileList(10000);
-            ReadAndOutputStudentsFileList(100000);
-            Console.WriteLine("-----------------");
-
-            Console.WriteLine("-----LinkedList");
-            ReadAndOutputStudentsFileLinkedList(100);
-            ReadAndOutputStudentsFileLinkedList(1000);
-            ReadAndOutputStudentsFileLinkedList(10000);
-            ReadAndOutputStudentsFileLinkedList(100000);
-            Console.WriteLine("-----------------");
-
             Console.WriteLine("-----Queue");
             ReadAndOutputStudentsFileDeque(100);
             ReadAndOutputStudentsFileDeque(1000);
@@ -42,88 +28,12 @@ namespace IDE
             Console.ReadKey(true);
         }
 
-        static void ReadAndOutputStudentsFileList(int length)
-        {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            ReadFilesAndOutputResultsList(length, "List");
-            Console.WriteLine("To process " + length.ToString() + " lines took: " + watch.ElapsedMilliseconds + "ms");
-            Console.WriteLine();
-        }
-
-        static void ReadAndOutputStudentsFileLinkedList(int length)
-        {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            ReadFilesAndOutputResultsLinkedList(length, "LinkedList");
-            Console.WriteLine("To process " + length.ToString() + " lines took: " + watch.ElapsedMilliseconds + "ms");
-            Console.WriteLine();
-        }
-
         static void ReadAndOutputStudentsFileDeque(int length)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             ReadFilesAndOutputResultsDeque(length, "Queue");
             Console.WriteLine("To process " + length.ToString() + " lines took: " + watch.ElapsedMilliseconds + "ms");
             Console.WriteLine();
-        }
-
-        static void ReadFilesAndOutputResultsList(int length, string enumerableType)
-        {
-            List<UserInput> userInput = new List<UserInput>();
-            string inFileName = "students" + length.ToString() + ".txt";
-            Console.WriteLine("Reading from: " + inFileName);
-            try
-            {   // Open the text file using a stream reader.
-                using (StreamReader sr = new StreamReader(dir + inFileName))
-                {
-                    // Read the stream to a string, and write the string to the console.
-                    string header = sr.ReadLine();
-
-                    while (sr.Peek() >= 0)
-                    {
-                        userInput.Add(ReadLineFromFile(sr.ReadLine()));
-                    }
-                }
-            }
-            catch (IOException e)
-            {
-                Console.WriteLine("The file could not be read:");
-                Console.WriteLine(e.Message);
-            }
-
-
-            PrintTable(userInput, length, enumerableType);
-
-            Console.WriteLine("Done reading from: " + inFileName);
-        }
-
-        static void ReadFilesAndOutputResultsLinkedList(int length, string enumerableType)
-        {
-            LinkedList<UserInput> userInput = new LinkedList<UserInput>();
-            string inFileName = "students" + length.ToString() + ".txt";
-            Console.WriteLine("Reading from: " + inFileName);
-            try
-            {   // Open the text file using a stream reader.
-                using (StreamReader sr = new StreamReader(dir + inFileName))
-                {
-                    // Read the stream to a string, and write the string to the console.
-                    string header = sr.ReadLine();
-
-                    while (sr.Peek() >= 0)
-                    {
-                        userInput.AddLast(ReadLineFromFile(sr.ReadLine()));
-                    }
-                }
-            }
-            catch (IOException e)
-            {
-                Console.WriteLine("The file could not be read:");
-                Console.WriteLine(e.Message);
-            }
-
-
-            PrintTable(userInput, length, enumerableType);
-
-            Console.WriteLine("Done reading from: " + inFileName);
         }
 
         static void ReadFilesAndOutputResultsDeque(int length, string enumerableType)
