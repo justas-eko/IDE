@@ -11,3 +11,11 @@ Reading from file and sorting by surename
 Code refactor:
 Improve error handling;
 Move code to separate files.
+
+# Release v0.4
+Generate files of different sizes;
+Read those files;
+Calculate median and average;
+Sort output by average (passed/failed) and output to two different files.
+
+Measure time this process have taken.
